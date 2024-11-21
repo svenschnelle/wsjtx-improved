@@ -507,6 +507,8 @@ private:
 
   qint32  m_waterfallAvg;
   qint32  m_ntx;
+  qint32  m_last_ntx;
+  qint32  m_ntx_retry;
   bool m_gen_message_is_cq;
   bool m_send_RR73;
   qint32  m_timeout;

@@ -1323,6 +1323,7 @@ void MainWindow::writeSettings()
   m_settings->setValue("DTtol",m_DTtol);
   m_settings->setValue("MinSync",m_minSync);
   m_settings->setValue ("AutoSeq", ui->cbAutoSeq->isChecked ());
+  m_settings->setValue ("AutoCQ", ui->cbAutoCQ->isChecked ());
   m_settings->setValue ("RxAll", ui->cbRxAll->isChecked ());
 // m_settings->setValue("ShMsgs",m_bShMsgs);
   m_settings->setValue("SWL",ui->cbSWL->isChecked());
@@ -1606,6 +1607,7 @@ void MainWindow::readSettings()
   m_minSync=m_settings->value("MinSync",0).toInt();
   ui->syncSpinBox->setValue(m_minSync);
   ui->cbAutoSeq->setChecked (m_settings->value ("AutoSeq", false).toBool());
+  ui->cbAutoCQ->setChecked (m_settings->value ("AutoCQ", false).toBool());
   ui->cbRxAll->setChecked (m_settings->value ("RxAll", false).toBool());
 // m_bShMsgs=m_settings->value("ShMsgs",false).toBool();
   m_bSWL=m_settings->value("SWL",false).toBool();
@@ -3138,8 +3140,8 @@ void MainWindow::on_sbTxPercent_valueChanged (int n)
 
 void MainWindow::auto_tx_mode (bool state)
 {
-  ui->autoButton->setChecked (state);
-  on_autoButton_clicked (state);
+	ui->autoButton->setChecked (state);
+	on_autoButton_clicked (state);
 }
 
 void MainWindow::keyPressEvent (QKeyEvent * e)
@@ -6997,7 +6999,8 @@ void MainWindow::guiUpdate()
         if(m_config.repeat_Tx() && (m_mode=="MSK144" or m_mode=="Q65")) {
            stopWRTimer.start(int(20000.0*m_TRperiod));  // send RR73 up to 10 times
         } else {
-          auto_tx_mode (false);
+          if (!ui->cbAutoCQ->isChecked())
+            auto_tx_mode (false);
           if(b) {
             m_ntx=6;
             ui->txrb6->setChecked(true);
@@ -7405,7 +7408,14 @@ void MainWindow::stopTx2()
     WSPR_scheduling ();
     m_ntr=0;
   }
-  last_tx_label.setText(tr ("Last Tx: %1").arg (m_currentMessage.trimmed()));
+
+  if (m_last_ntx != m_ntx) {
+    m_ntx_retry = 10;
+    m_last_ntx = m_ntx;
+  } else if (m_ntx != 6 && m_ntx != 1 && m_last_ntx == m_ntx && --m_ntx_retry == 0) {
+    ui->txb6->click();
+  }
+  last_tx_label.setText(tr ("Last Tx: %1 (%2)").arg (m_currentMessage.trimmed()).arg(m_ntx_retry));
 }
 
 void MainWindow::ba2msg(QByteArray ba, char message[])             //ba2msg()
@@ -7612,6 +7622,8 @@ void MainWindow::on_txb6_clicked()
     m_QSOProgress = CALLING;
     set_dateTimeQSO(-1);
     ui->txrb6->setChecked(true);
+    m_ntx_retry = 10;
+    m_last_ntx = m_ntx;
     if(m_transmitting) m_restart=true;
 }
 
@@ -7994,7 +8006,7 @@ void MainWindow::processMessage (DecodedText const& message, Qt::KeyboardModifie
                   if (!(m_mode=="FT4" && SpecOp::NA_VHF==m_specOp && m_config.NCCC_Sprint())) logQSOTimer.start(0);
                 }
                 else {
-                  cease_auto_Tx_after_QSO ();
+                      cease_auto_Tx_after_QSO ();
                 }
                 m_ntx=6;
                 ui->txrb6->setChecked(true);
@@ -9231,7 +9243,8 @@ void MainWindow::cease_auto_Tx_after_QSO ()
       // ensure that auto Tx is disabled even if disable Tx
       // on 73 is not checked, unless in Fox mode where it is allowed
       // to be a robot.
-      auto_tx_mode (false);
+        if (!ui->cbAutoCQ->isChecked())
+            auto_tx_mode (false);
     }
 }
 
@@ -9301,7 +9314,7 @@ void MainWindow::on_logQSOButton_clicked()                 //Log QSO button
 
   m_logDlg->initLogQSO (m_hisCall, grid, m_mode, m_rptSent, m_rptRcvd,
                         m_dateTimeQSOOn, dateTimeQSOOff, m_freqNominal +
-                        ui->TxFreqSpinBox->value(), m_noSuffix, m_xSent, m_xRcvd);
+                        ui->TxFreqSpinBox->value(), m_noSuffix, m_xSent, m_xRcvd, ui->cbAutoCQ->isChecked());
   m_inQSOwith="";
   if (ui->respondComboBox->isVisible() && ui->respondComboBox->currentText() != "CQ: None") {
         Dpoints=0;                          // reset points

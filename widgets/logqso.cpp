@@ -210,7 +210,8 @@ void LogQSO::storeSettings () const
 void LogQSO::initLogQSO(QString const& hisCall, QString const& hisGrid, QString mode,
                         QString const& rptSent, QString const& rptRcvd,
                         QDateTime const& dateTimeOn, QDateTime const& dateTimeOff,
-                        Radio::Frequency dialFreq, bool noSuffix, QString xSent, QString xRcvd)
+                        Radio::Frequency dialFreq, bool noSuffix, QString xSent, QString xRcvd,
+			bool autolog)
 {
   if(!isHidden()) return;
 
@@ -340,7 +341,7 @@ void LogQSO::initLogQSO(QString const& hisCall, QString const& hisGrid, QString 
     m_comments = "";
   }
 
-  if (SpOp::FOX == special_op
+  if (SpOp::FOX == special_op || autolog
       || (m_config->autoLog () && ((SpOp::NONE < special_op && special_op < SpOp::FOX)
           || SpOp::ARRL_DIGI == special_op)))
     {
