@@ -492,7 +492,8 @@ void DisplayText::displayDecodedText(DecodedText const& decodedText, QString con
   m_bPrincipalPrefix=ppfx;
   QColor bg;
   QColor fg;
-  bool CQcall = false;
+  bool CQcall = true;
+  (void)bCQonly;
   auto is_73 = decodedText.messageWords().filter (QRegularExpression {"^(73|RR73)$"}).size();
   if (decodedText.string ().contains ("CQ ")) {
           if (m_config->alert_CQ()) {
@@ -508,7 +509,7 @@ void DisplayText::displayDecodedText(DecodedText const& decodedText, QString con
     }
   else
     {
-      if (bCQonly) return;
+//      if (bCQonly) return;
     }
   auto message = decodedText.string();
   QString dxCall;
