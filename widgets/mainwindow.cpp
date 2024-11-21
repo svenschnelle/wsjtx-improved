@@ -7157,6 +7157,8 @@ void MainWindow::guiUpdate()
 
     if(m_mode=="FST4") chk_FST4_freq_range();
     m_currentBand=m_config.bands()->find(m_freqNominal);
+
+#if 0
     if( SpecOp::HOUND == m_specOp ) {
       qint32 tHound=QDateTime::currentMSecsSinceEpoch()/1000 - m_tAutoOn;
       //To keep calling Fox, Hound must reactivate Enable Tx at least once every 2 minutes
@@ -7176,6 +7178,7 @@ void MainWindow::guiUpdate()
         }
       }
     }
+#endif
 
     progressBar.setVisible(true);
     // turn the progressbar red during transmission
