@@ -7349,6 +7349,7 @@ void MainWindow::useNextCall()
 
 void MainWindow::startTx2()
 {
+  m_lastLoggedCall.clear();
   if (!m_modulator->isActive ()) { // TODO - not thread safe
     double fSpread=0.0;
     double snr=99.0;
@@ -7470,6 +7471,7 @@ void MainWindow::on_txrb1_toggled (bool status)
     if (ui->tx1->isEnabled ()) {
       m_ntx = 1;
       set_dateTimeQSO (-1); // we reset here as tx2/tx3 is used for start times
+      m_lastLoggedCall.clear();
     }
     else {
       QTimer::singleShot (0, ui->txrb2, SLOT (click ()));
@@ -9250,6 +9252,9 @@ void MainWindow::cease_auto_Tx_after_QSO ()
 
 void MainWindow::on_logQSOButton_clicked()                 //Log QSO button
 {
+  if (m_lastLoggedCall == m_hisCall && ui->cbAutoCQ->isChecked())
+    return;
+  m_lastLoggedCall = m_hisCall;
   if (!(m_config.repeat_Tx() && (m_mode=="MSK144" or m_mode=="Q65"))) {
     if (SpecOp::NA_VHF==m_specOp && m_mode=="FT4" && m_config.NCCC_Sprint()) {
       QTimer::singleShot (int(850.0*m_TRperiod), [=] {cease_auto_Tx_after_QSO ();});
@@ -10618,6 +10623,7 @@ void MainWindow::on_bandComboBox_activated (int index)
 
 void MainWindow::band_changed (Frequency f)
 {
+  m_lastLoggedCall.clear();
   QTimer::singleShot (1000, [=] {
       if (m_mode=="MSK144" && (!(m_currentBand=="6m" or m_currentBand=="4m" or m_currentBand=="2m")))
           ui->sbTR->setValue (m_settings->value ("TRPeriod_MSK144", 30).toInt());

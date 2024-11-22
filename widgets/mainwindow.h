@@ -702,6 +702,7 @@ private:
   QString m_path;
   QString m_baseCall;
   QString m_hisCall;
+  QString m_lastLoggedCall;
   QString m_hisGrid;
   QString m_appDir;
   QString m_cqStr;
